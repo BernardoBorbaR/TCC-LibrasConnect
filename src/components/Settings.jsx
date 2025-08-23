@@ -7,16 +7,14 @@ import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // --- MODIFICAÇÃO AQUI ---
-// Recebendo props para controlar o estado global
-const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
-  // Removendo useState local para darkMode e largeText
-  const [highContrast, setHighContrast] = useState(false)
+// Recebendo as novas props highContrast e setHighContrast
+const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast, setHighContrast }) => {
+  // Removendo o useState local para highContrast
+  // --- FIM DA MODIFICAÇÃO ---
   const [gestureSize, setGestureSize] = useState([50])
   const [audioFeedback, setAudioFeedback] = useState(true)
-  // Removendo useState para speechSpeed
   const [vibration, setVibration] = useState(true)
   const [cameraQuality, setCameraQuality] = useState('high')
-  // --- FIM DA MODIFICAÇÃO ---
 
   const testVibration = () => {
     if ('vibrate' in navigator) {
@@ -29,12 +27,12 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
   }
 
   const resetSettings = () => {
-    // --- MODIFICAÇÃO AQUI ---
-    // Resetando o estado global também
     setDarkMode(false)
     setLargeText(false)
-    // --- FIM DA MODIFICAÇÃO ---
+    // --- MODIFICAÇÃO AQUI ---
+    // Resetando o estado global de alto contraste
     setHighContrast(false)
+    // --- FIM DA MODIFICAÇÃO ---
     setGestureSize([50])
     setAudioFeedback(true)
     setVibration(true)
@@ -71,12 +69,10 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
                   <h3 className="font-medium">Modo Escuro</h3>
                   <p className="text-sm text-gray-600">Reduz o brilho da tela para ambientes escuros</p>
                 </div>
-                {/* --- MODIFICAÇÃO AQUI --- */}
                 <Switch
                   checked={darkMode}
                   onCheckedChange={setDarkMode}
                 />
-                {/* --- FIM DA MODIFICAÇÃO --- */}
               </div>
 
               {/* High Contrast */}
@@ -85,10 +81,13 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
                   <h3 className="font-medium">Alto Contraste</h3>
                   <p className="text-sm text-gray-600">Aumenta o contraste para melhor visibilidade</p>
                 </div>
+                {/* --- MODIFICAÇÃO AQUI --- */}
+                {/* Este Switch agora controla o estado que vem de App.jsx */}
                 <Switch
                   checked={highContrast}
                   onCheckedChange={setHighContrast}
                 />
+                {/* --- FIM DA MODIFICAÇÃO --- */}
               </div>
 
               {/* Large Text */}
@@ -97,12 +96,10 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
                   <h3 className="font-medium">Texto Grande</h3>
                   <p className="text-sm text-gray-600">Aumenta o tamanho dos textos</p>
                 </div>
-                {/* --- MODIFICAÇÃO AQUI --- */}
                 <Switch
                   checked={largeText}
                   onCheckedChange={setLargeText}
                 />
-                {/* --- FIM DA MODIFICAÇÃO --- */}
               </div>
 
               {/* Gesture Size */}
@@ -142,10 +139,6 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText }) => {
                   onCheckedChange={setAudioFeedback}
                 />
               </div>
-
-              {/* --- MODIFICAÇÃO AQUI --- */}
-              {/* Seção "Velocidade da Fala" foi removida */}
-              {/* --- FIM DA MODIFICAÇÃO --- */}
 
               {/* Vibration */}
               <div className="flex items-center justify-between">

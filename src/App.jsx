@@ -9,15 +9,18 @@ import './App.css'
 function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [largeText, setLargeText] = useState(false)
+  // --- MODIFICAÇÃO AQUI ---
+  const [highContrast, setHighContrast] = useState(false)
+  // --- FIM DA MODIFICAÇÃO ---
 
   return (
     <Router>
       {/* --- MODIFICAÇÃO AQUI --- */}
-      {/* Trocamos 'bg-gray-50' por 'bg-background' para que o tema funcione */}
+      {/* Adicionamos a classe highContrast dinamicamente */}
       <div
         className={`min-h-screen bg-background ${darkMode ? 'dark' : ''} ${
           largeText ? 'large-text' : ''
-        }`}
+        } ${highContrast ? 'high-contrast' : ''}`}
       >
       {/* --- FIM DA MODIFICAÇÃO --- */}
         <Routes>
@@ -32,6 +35,10 @@ function App() {
                 setDarkMode={setDarkMode}
                 largeText={largeText}
                 setLargeText={setLargeText}
+                // --- MODIFICAÇÃO AQUI ---
+                highContrast={highContrast}
+                setHighContrast={setHighContrast}
+                // --- FIM DA MODIFICAÇÃO ---
               />
             }
           />

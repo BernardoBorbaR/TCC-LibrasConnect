@@ -110,6 +110,29 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* --- MODIFICAÇÃO AQUI --- */
+.high-contrast {
+  --background: oklch(0 0 0); /* Preto */
+  --foreground: oklch(1 0 0); /* Branco */
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0); /* Botão primário branco */
+  --primary-foreground: oklch(0 0 0); /* Texto do botão primário preto */
+  --secondary: oklch(0.2 0 0); /* Cinza bem escuro */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.8 0 0); /* Cinza claro */
+  --accent: oklch(0.2 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.8 0.2 30); /* Vermelho vivo */
+  --border: oklch(1 0 0); /* Bordas brancas */
+  --input: oklch(0 0 0);
+  --ring: oklch(0.9 0.3 260); /* Anel de foco azul/violeta vivo */
+}
+/* --- FIM DA MODIFICAÇÃO --- */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -119,8 +142,6 @@
   }
 }
 
-/* --- MODIFICAÇÃO AQUI --- */
 .large-text {
   font-size: 18px; /* Aumenta o tamanho da fonte base */
 }
-/* --- FIM DA MODIFICAÇÃO --- */
