@@ -11,9 +11,12 @@ export const useHandGestureRecognition = () => {
   useEffect(() => {
     const initializeHandLandmarker = async () => {
       try {
+        // --- MODIFICAÇÃO AQUI ---
+        // Atualizando para a versão mais recente e estável da CDN
         const vision = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
         );
+        // --- FIM DA MODIFICAÇÃO ---
 
         const landmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
@@ -27,7 +30,10 @@ export const useHandGestureRecognition = () => {
         setHandLandmarker(landmarker);
         console.log('HandLandmarker inicializado com sucesso!');
       } catch (e) {
-        console.error('Erro ao inicializar o HandLandmarker:', e);
+        // --- MODIFICAÇÃO AQUI ---
+        // Logando o erro completo para uma depuração mais eficaz
+        console.error('Erro detalhado ao inicializar o HandLandmarker:', e);
+        // --- FIM DA MODIFICAÇÃO ---
         setError(e);
       } finally {
         setLoading(false);
@@ -41,46 +47,42 @@ export const useHandGestureRecognition = () => {
     };
   }, []);
 
-  // --- MODIFICAÇÃO AQUI ---
   const recognizeGesture = (landmarks) => {
     if (!landmarks || landmarks.length === 0) {
       return '';
     }
 
-    const hand = landmarks[0]; // Estamos tratando apenas uma mão
+    const hand = landmarks[0];
 
-    // Lógica para "Polegar para Cima" (👍)
     const isThumbsUp =
-      hand[4].y < hand[3].y && hand[4].y < hand[2].y && // Ponta do polegar acima das juntas
-      hand[8].y > hand[6].y &&   // Indicador dobrado
-      hand[12].y > hand[10].y && // Dedo médio dobrado
-      hand[16].y > hand[14].y && // Anelar dobrado
-      hand[20].y > hand[18].y;   // Mínimo dobrado
+      hand[4].y < hand[3].y && hand[4].y < hand[2].y &&
+      hand[8].y > hand[6].y &&
+      hand[12].y > hand[10].y &&
+      hand[16].y > hand[14].y &&
+      hand[20].y > hand[18].y;
 
     if (isThumbsUp) {
       return 'Polegar para Cima 👍';
     }
 
-    // Lógica para "Mão Aberta" (✋)
     const isOpenHand =
-      hand[4].x < hand[5].x && // Polegar aberto (considerando mão direita)
-      hand[8].y < hand[6].y &&   // Indicador esticado
-      hand[12].y < hand[10].y && // Dedo médio esticado
-      hand[16].y < hand[14].y && // Anelar esticado
-      hand[20].y < hand[18].y;   // Mínimo esticado
+      hand[4].x < hand[5].x &&
+      hand[8].y < hand[6].y &&
+      hand[12].y < hand[10].y &&
+      hand[16].y < hand[14].y &&
+      hand[20].y < hand[18].y;
 
     if (isOpenHand) {
       return 'Mão Aberta ✋';
     }
 
-    return ''; // Nenhum gesto conhecido
+    return '';
   };
-  // --- FIM DA MODIFICAÇÃO ---
 
   const stopPrediction = useCallback(() => {
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
-      setDetectedGesture(''); // Limpa o gesto ao parar
+      setDetectedGesture('');
     }
   }, []);
 
@@ -92,14 +94,12 @@ export const useHandGestureRecognition = () => {
         const startTimeMs = performance.now();
         const results = handLandmarker.detectForVideo(video, startTimeMs);
 
-        // --- MODIFICAÇÃO AQUI ---
         if (results.landmarks && results.landmarks.length > 0) {
           const gesture = recognizeGesture(results.landmarks);
           setDetectedGesture(gesture);
         } else {
-          setDetectedGesture(''); // Limpa se nenhuma mão for detectada
+          setDetectedGesture('');
         }
-        // --- FIM DA MODIFICAÇÃO ---
       }
       requestRef.current = requestAnimationFrame(animate);
     };
