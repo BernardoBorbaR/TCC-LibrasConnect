@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera, Volume2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+// --- MODIFICAÇÃO AQUI ---
+import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
+// --- FIM DA MODIFICAÇÃO ---
 
 const RealTimeTranslator = () => {
   const [isDetecting, setIsDetecting] = useState(false)
@@ -9,6 +12,11 @@ const RealTimeTranslator = () => {
   const [isCameraActive, setIsCameraActive] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+
+  // --- MODIFICAÇÃO AQUI ---
+  // Chamando o hook para acionar a inicialização do modelo
+  useHandGestureRecognition();
+  // --- FIM DA MODIFICAÇÃO ---
 
   const startCamera = async () => {
     try {
