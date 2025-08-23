@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Camera, Volume2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Camera, Volume2, Trash2, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 // --- MODIFICAÇÃO AQUI ---
 import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
@@ -8,14 +8,17 @@ import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
 
 const RealTimeTranslator = () => {
   const [isDetecting, setIsDetecting] = useState(false)
-  const [translatedText, setTranslatedText] = useState('O texto traduzido aparecerá aqui...')
+  // --- MODIFICAÇÃO AQUI ---
+  // O estado do texto agora será controlado pelo hook, mas mantemos um estado local para a UI
+  const [translatedText, setTranslatedText] = useState('Aponte a câmera para sua mão para começar.')
+  // --- FIM DA MODIFICAÇÃO ---
   const [isCameraActive, setIsCameraActive] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
   // --- MODIFICAÇÃO AQUI ---
-  // Chamando o hook para acionar a inicialização do modelo
-  useHandGestureRecognition();
+  // Usando o hook e desestruturando seus retornos
+  const { detectedGesture, loading, error, predictWebcam, stopPrediction } = useHandGestureRecognition();
   // --- FIM DA MODIFICAÇÃO ---
 
   const startCamera = async () => {
@@ -29,6 +32,10 @@ const RealTimeTranslator = () => {
         videoRef.current.srcObject = stream
         streamRef.current = stream
         setIsCameraActive(true)
+        // Inicia a predição assim que a câmera estiver pronta
+        videoRef.current.onloadedmetadata = () => {
+          predictWebcam(videoRef.current);
+        };
       }
     } catch (error) {
       console.error('Erro ao acessar a câmera:', error)
@@ -37,6 +44,7 @@ const RealTimeTranslator = () => {
   }
 
   const stopCamera = () => {
+    stopPrediction(); // Para o loop de detecção
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
       streamRef.current = null
@@ -45,28 +53,45 @@ const RealTimeTranslator = () => {
     }
   }
 
-  const startDetection = () => {
-    if (!isCameraActive) {
-      startCamera()
+  // --- MODIFICAÇÃO AQUI ---
+  // Simplificando a função startDetection
+  const handleDetectionClick = () => {
+    if (isDetecting) {
+      stopCamera();
+    } else {
+      setIsDetecting(true);
+      startCamera();
     }
-    setIsDetecting(true)
-    // Simulação de detecção - em uma implementação real, aqui seria integrada a IA
-    setTimeout(() => {
-      setTranslatedText('Olá! Como você está?')
-    }, 2000)
   }
+  // --- FIM DA MODIFICAÇÃO ---
 
   const clearText = () => {
-    setTranslatedText('O texto traduzido aparecerá aqui...')
+    setTranslatedText('Aponte a câmera para sua mão para começar.')
   }
 
   const speakText = () => {
-    if ('speechSynthesis' in window && translatedText !== 'O texto traduzido aparecerá aqui...') {
-      const utterance = new SpeechSynthesisUtterance(translatedText)
+    const textToSpeak = translatedText.replace(/👍|✋/g, '').trim(); // Remove emojis para a fala
+    if ('speechSynthesis' in window && textToSpeak) {
+      const utterance = new SpeechSynthesisUtterance(textToSpeak)
       utterance.lang = 'pt-BR'
       speechSynthesis.speak(utterance)
     }
   }
+
+  // --- MODIFICAÇÃO AQUI ---
+  // Efeito para atualizar o texto da UI com base no gesto detectado
+  useEffect(() => {
+    if (isDetecting) {
+      if (detectedGesture) {
+        setTranslatedText(detectedGesture);
+      } else {
+        setTranslatedText('...'); // Feedback visual de que a detecção está ativa
+      }
+    } else {
+      setTranslatedText('Aponte a câmera para sua mão para começar.');
+    }
+  }, [detectedGesture, isDetecting]);
+  // --- FIM DA MODIFICAÇÃO ---
 
   useEffect(() => {
     return () => {
@@ -110,14 +135,21 @@ const RealTimeTranslator = () => {
               )}
             </div>
 
+            {/* --- MODIFICAÇÃO AQUI --- */}
             <Button 
-              onClick={startDetection}
-              disabled={isDetecting}
+              onClick={handleDetectionClick}
+              disabled={loading}
               className="w-full"
             >
-              <Camera className="w-4 h-4 mr-2" />
-              {isDetecting ? 'Detectando...' : 'Iniciar Detecção'}
+              {loading ? (
+                <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 mr-2" />
+              )}
+              {loading ? 'Carregando IA...' : (isDetecting ? 'Parar Detecção' : 'Iniciar Detecção')}
             </Button>
+            {error && <p className="text-destructive text-sm mt-2">Erro ao carregar modelo de IA.</p>}
+            {/* --- FIM DA MODIFICAÇÃO --- */}
           </div>
 
           {/* Translation Section */}
@@ -141,7 +173,7 @@ const RealTimeTranslator = () => {
                 onClick={speakText}
                 variant="outline"
                 className="flex-1"
-                disabled={translatedText === 'O texto traduzido aparecerá aqui...'}
+                disabled={!translatedText || translatedText.startsWith('Aponte') || translatedText === '...'}
               >
                 <Volume2 className="w-4 h-4 mr-2" />
                 Falar Texto
@@ -156,27 +188,23 @@ const RealTimeTranslator = () => {
           <ul className="space-y-2 text-muted-foreground">
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              A detecção de sinais funciona automaticamente com a câmera ativada
+              Clique em "Iniciar Detecção" para ligar a câmera e começar o reconhecimento.
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              Posicione-se de frente para a câmera com boa iluminação
+              Posicione-se de frente para a câmera com boa iluminação.
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              Faça os sinais de libras de forma clara e pausada
+              Faça os sinais de libras de forma clara e pausada.
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              O texto traduzido aparecerá em tempo real na tela
+              O texto traduzido aparecerá em tempo real na tela.
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              Use "Falar Texto" para reproduzir o áudio da tradução
-            </li>
-            <li className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              Clique em "Iniciar Detecção" para começar o reconhecimento
+              Use "Falar Texto" para reproduzir o áudio da tradução.
             </li>
           </ul>
         </div>
