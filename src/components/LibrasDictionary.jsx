@@ -1,127 +1,25 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react' // --- MODIFICAÇÃO AQUI ---
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Search, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+// --- MODIFICAÇÃO AQUI ---
+import { signs } from '@/data/signs' // Importando os dados externalizados
+// --- FIM DA MODIFICAÇÃO ---
 
 const LibrasDictionary = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('Todas')
 
-  const categories = ['Todas', 'Cumprimentos', 'Necessidades', 'Respostas', 'Lugares']
+  // --- MODIFICAÇÃO AQUI ---
+  // Gerando a lista de categorias dinamicamente a partir dos dados
+  const categories = useMemo(() => {
+    const allCategories = signs.map(sign => sign.category)
+    return ['Todas', ...new Set(allCategories)]
+  }, [])
 
-  const signs = [
-    {
-      id: 1,
-      word: 'Olá',
-      category: 'Cumprimentos',
-      description: 'Saudação básica em libras',
-      instructions: [
-        'Levante a mão direita na altura do ombro',
-        'Mantenha a palma voltada para frente',
-        'Balance suavemente de um lado para o outro'
-      ]
-    },
-    {
-      id: 2,
-      word: 'Obrigado',
-      category: 'Cumprimentos',
-      description: 'Expressão de gratidão',
-      instructions: [
-        'Coloque a mão direita no peito',
-        'Mova a mão para frente em direção à pessoa',
-        'Mantenha a palma voltada para cima'
-      ]
-    },
-    {
-      id: 3,
-      word: 'Por favor',
-      category: 'Cumprimentos',
-      description: 'Pedido educado',
-      instructions: [
-        'Una as duas mãos em posição de oração',
-        'Mova as mãos para frente e para baixo',
-        'Mantenha expressão facial educada'
-      ]
-    },
-    {
-      id: 4,
-      word: 'Desculpa',
-      category: 'Cumprimentos',
-      description: 'Pedido de desculpas',
-      instructions: [
-        'Coloque a mão direita na testa',
-        'Mova a mão para baixo até o queixo',
-        'Expressão facial de arrependimento'
-      ]
-    },
-    {
-      id: 5,
-      word: 'Água',
-      category: 'Necessidades',
-      description: 'Sinal para água',
-      instructions: [
-        'Forme a letra \'A\' com a mão direita',
-        'Leve a mão até a boca',
-        'Faça movimento como se estivesse bebendo'
-      ]
-    },
-    {
-      id: 6,
-      word: 'Comer',
-      category: 'Necessidades',
-      description: 'Ação de comer',
-      instructions: [
-        'Junte os dedos da mão direita',
-        'Leve a mão até a boca repetidamente',
-        'Simule o movimento de comer'
-      ]
-    },
-    {
-      id: 7,
-      word: 'Ajuda',
-      category: 'Necessidades',
-      description: 'Pedido de auxílio',
-      instructions: [
-        'Coloque a mão direita sobre a esquerda',
-        'Levante ambas as mãos',
-        'Expressão facial de necessidade'
-      ]
-    },
-    {
-      id: 8,
-      word: 'Sim',
-      category: 'Respostas',
-      description: 'Resposta afirmativa',
-      instructions: [
-        'Forme punho com a mão direita',
-        'Balance para cima e para baixo',
-        'Como um aceno de cabeça com a mão'
-      ]
-    },
-    {
-      id: 9,
-      word: 'Não',
-      category: 'Respostas',
-      description: 'Resposta negativa',
-      instructions: [
-        'Estenda o dedo indicador',
-        'Balance de um lado para o outro',
-        'Expressão facial negativa'
-      ]
-    },
-    {
-      id: 10,
-      word: 'Casa',
-      category: 'Lugares',
-      description: 'Local de moradia',
-      instructions: [
-        'Forme um triângulo com as duas mãos',
-        'Coloque as pontas dos dedos juntas',
-        'Simule o telhado de uma casa'
-      ]
-    }
-  ]
+  // Removido o array 'signs' que estava hardcoded aqui
+  // --- FIM DA MODIFICAÇÃO ---
 
   const filteredSigns = signs.filter(sign => {
     const matchesSearch = sign.word.toLowerCase().includes(searchTerm.toLowerCase())
@@ -213,20 +111,21 @@ const LibrasDictionary = () => {
           </div>
         )}
 
+        {/* --- MODIFICAÇÃO AQUI --- */}
         {/* Statistics */}
         <div className="mt-12 bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold mb-4">Estatísticas do Dicionário</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-3xl font-bold text-slate-800">10</div>
+              <div className="text-3xl font-bold text-slate-800">{signs.length}</div>
               <div className="text-sm text-gray-600">Total de Sinais</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-800">4</div>
+              <div className="text-3xl font-bold text-slate-800">{categories.length - 1}</div>
               <div className="text-sm text-gray-600">Categorias</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-800">10</div>
+              <div className="text-3xl font-bold text-slate-800">{filteredSigns.length}</div>
               <div className="text-sm text-gray-600">Resultados</div>
             </div>
             <div>
@@ -235,10 +134,10 @@ const LibrasDictionary = () => {
             </div>
           </div>
         </div>
+        {/* --- FIM DA MODIFICAÇÃO --- */}
       </main>
     </div>
   )
 }
 
 export default LibrasDictionary
-
