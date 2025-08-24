@@ -11,29 +11,25 @@ export const useHandGestureRecognition = () => {
   useEffect(() => {
     const initializeHandLandmarker = async () => {
       try {
-        // --- MODIFICAÇÃO AQUI ---
-        // Atualizando para a versão mais recente e estável da CDN
+        // --- MUDANÇA CHAVE 1: Usar a versão mais recente e estável ---
         const vision = await FilesetResolver.forVisionTasks(
           'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
         );
-        // --- FIM DA MODIFICAÇÃO ---
 
         const landmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/latest/hand_landmarker.task`,
-            delegate: 'GPU',
+            // --- MUDANÇA CHAVE 2: Usar um caminho de modelo versionado e estável ---
+            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            delegate: 'CPU',
           },
           runningMode: 'VIDEO',
-          numHands: 1,
+          numHands: 1, // Detectar apenas uma mão para melhor performance
         });
 
         setHandLandmarker(landmarker);
         console.log('HandLandmarker inicializado com sucesso!');
       } catch (e) {
-        // --- MODIFICAÇÃO AQUI ---
-        // Logando o erro completo para uma depuração mais eficaz
         console.error('Erro detalhado ao inicializar o HandLandmarker:', e);
-        // --- FIM DA MODIFICAÇÃO ---
         setError(e);
       } finally {
         setLoading(false);
@@ -42,41 +38,38 @@ export const useHandGestureRecognition = () => {
 
     initializeHandLandmarker();
 
+    // Função de limpeza para fechar o landmarker quando o componente for desmontado
     return () => {
       handLandmarker?.close();
     };
-  }, []);
+  }, []); // O array de dependências vazio garante que isso rode apenas uma vez
 
+  // A lógica de reconhecimento de gestos (pode ser substituída por um modelo de IA no futuro)
   const recognizeGesture = (landmarks) => {
     if (!landmarks || landmarks.length === 0) {
       return '';
     }
-
     const hand = landmarks[0];
 
+    // Lógica para "Polegar para Cima"
     const isThumbsUp =
-      hand[4].y < hand[3].y && hand[4].y < hand[2].y &&
-      hand[8].y > hand[6].y &&
-      hand[12].y > hand[10].y &&
-      hand[16].y > hand[14].y &&
-      hand[20].y > hand[18].y;
+      hand[4].y < hand[3].y && hand[4].y < hand[2].y && // Polegar para cima
+      hand[8].y > hand[6].y && // Indicador dobrado
+      hand[12].y > hand[10].y && // Médio dobrado
+      hand[16].y > hand[14].y && // Anelar dobrado
+      hand[20].y > hand[18].y; // Mínimo dobrado
+    if (isThumbsUp) return 'Polegar para Cima 👍';
 
-    if (isThumbsUp) {
-      return 'Polegar para Cima 👍';
-    }
-
+    // Lógica para "Mão Aberta"
     const isOpenHand =
-      hand[4].x < hand[5].x &&
-      hand[8].y < hand[6].y &&
-      hand[12].y < hand[10].y &&
-      hand[16].y < hand[14].y &&
-      hand[20].y < hand[18].y;
+      hand[4].x < hand[5].x && // Polegar afastado (para mão direita)
+      hand[8].y < hand[6].y && // Indicador esticado
+      hand[12].y < hand[10].y && // Médio esticado
+      hand[16].y < hand[14].y && // Anelar esticado
+      hand[20].y < hand[18].y; // Mínimo esticado
+    if (isOpenHand) return 'Mão Aberta ✋';
 
-    if (isOpenHand) {
-      return 'Mão Aberta ✋';
-    }
-
-    return '';
+    return ''; // Nenhum gesto conhecido
   };
 
   const stopPrediction = useCallback(() => {
@@ -90,7 +83,7 @@ export const useHandGestureRecognition = () => {
     if (!handLandmarker || !video) return;
 
     const animate = () => {
-      if (video.currentTime > 0) {
+      if (video.readyState >= 2) { // Garante que o vídeo tem dados para exibir
         const startTimeMs = performance.now();
         const results = handLandmarker.detectForVideo(video, startTimeMs);
 
