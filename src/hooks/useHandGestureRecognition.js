@@ -58,7 +58,7 @@ export const useHandGestureRecognition = () => {
       hand[12].y > hand[10].y && // Médio dobrado
       hand[16].y > hand[14].y && // Anelar dobrado
       hand[20].y > hand[18].y; // Mínimo dobrado
-    if (isThumbsUp) return 'Polegar para Cima 👍';
+    if (isThumbsUp) return 'Polegar para Cima';
 
     // Lógica para "Mão Aberta"
     const isOpenHand =
@@ -67,7 +67,7 @@ export const useHandGestureRecognition = () => {
       hand[12].y < hand[10].y && // Médio esticado
       hand[16].y < hand[14].y && // Anelar esticado
       hand[20].y < hand[18].y; // Mínimo esticado
-    if (isOpenHand) return 'Mão Aberta ✋';
+    if (isOpenHand) return 'Mão Aberta';
 
     return ''; // Nenhum gesto conhecido
   };

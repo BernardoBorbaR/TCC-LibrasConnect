@@ -6,7 +6,6 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      {/* --- MODIFICAÇÃO AQUI --- */}
       <header className="bg-primary text-primary-foreground py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center mb-4">
@@ -19,14 +18,12 @@ const HomePage = () => {
           </p>
         </div>
       </header>
-      {/* --- FIM DA MODIFICAÇÃO --- */}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {/* Real Time Translator Card */}
-          {/* --- MODIFICAÇÃO AQUI --- */}
           <div className="bg-card text-card-foreground rounded-lg border p-6 hover:shadow-lg transition-shadow">
             <div className="text-center">
               <Camera className="w-16 h-16 mx-auto mb-4 text-foreground" />
@@ -41,10 +38,8 @@ const HomePage = () => {
               </Link>
             </div>
           </div>
-          {/* --- FIM DA MODIFICAÇÃO --- */}
 
           {/* Dictionary Card */}
-          {/* --- MODIFICAÇÃO AQUI --- */}
           <div className="bg-card text-card-foreground rounded-lg border p-6 hover:shadow-lg transition-shadow">
             <div className="text-center">
               <Book className="w-16 h-16 mx-auto mb-4 text-foreground" />
@@ -59,10 +54,8 @@ const HomePage = () => {
               </Link>
             </div>
           </div>
-          {/* --- FIM DA MODIFICAÇÃO --- */}
 
           {/* Settings Card */}
-          {/* --- MODIFICAÇÃO AQUI --- */}
           <div className="bg-card text-card-foreground rounded-lg border p-6 hover:shadow-lg transition-shadow">
             <div className="text-center">
               <Settings className="w-16 h-16 mx-auto mb-4 text-foreground" />
@@ -77,21 +70,20 @@ const HomePage = () => {
               </Link>
             </div>
           </div>
-          {/* --- FIM DA MODIFICAÇÃO --- */}
         </div>
 
         {/* Why Choose Section */}
         <section className="mb-16">
-          {/* --- MODIFICAÇÃO AQUI --- */}
           <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
             Por que escolher o LibrasConnect?
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8">
+            {/* --- MODIFICAÇÃO AQUI --- */}
             {/* Real Time Translation */}
             <div className="text-center bg-card p-8 rounded-lg">
               <Hand className="w-16 h-16 mx-auto mb-4 text-foreground" />
-              <h3 className="text-xl font-semibold mb-4">Tradução em Tempo Real</h3>
+              <h3 className="text-xl font-semibold mb-4 text-card-foreground">Tradução em Tempo Real</h3>
               <p className="text-muted-foreground">
                 Tecnologia avançada para detectar e traduzir sinais de 
                 libras instantaneamente usando sua câmera frontal.
@@ -101,7 +93,7 @@ const HomePage = () => {
             {/* Inclusive Communication */}
             <div className="text-center bg-card p-8 rounded-lg">
               <Users className="w-16 h-16 mx-auto mb-4 text-foreground" />
-              <h3 className="text-xl font-semibold mb-4">Comunicação Inclusiva</h3>
+              <h3 className="text-xl font-semibold mb-4 text-card-foreground">Comunicação Inclusiva</h3>
               <p className="text-muted-foreground">
                 Quebra barreiras de comunicação, permitindo 
                 conversas fluidas entre pessoas surdas e ouvintes.
@@ -111,20 +103,19 @@ const HomePage = () => {
             {/* Totally Free */}
             <div className="text-center bg-card p-8 rounded-lg">
               <Heart className="w-16 h-16 mx-auto mb-4 text-foreground" />
-              <h3 className="text-xl font-semibold mb-4">Totalmente Gratuito</h3>
+              <h3 className="text-xl font-semibold mb-4 text-card-foreground">Totalmente Gratuito</h3>
               <p className="text-muted-foreground">
                 Acesso completo e gratuito a todas as 
                 funcionalidades. Nossa missão é democratizar a 
                 comunicação.
               </p>
             </div>
+            {/* --- FIM DA MODIFICAÇÃO --- */}
           </div>
-          {/* --- FIM DA MODIFICAÇÃO --- */}
         </section>
       </main>
 
       {/* Footer */}
-      {/* --- MODIFICAÇÃO AQUI --- */}
       <footer className="bg-primary text-primary-foreground py-8">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-lg font-semibold mb-2">
@@ -135,7 +126,6 @@ const HomePage = () => {
           </p>
         </div>
       </footer>
-      {/* --- FIM DA MODIFICAÇÃO --- */}
     </div>
   )
 }

@@ -2,24 +2,16 @@ import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera, Volume2, Trash2, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-// --- MODIFICAÇÃO AQUI ---
 import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
-// --- FIM DA MODIFICAÇÃO ---
 
 const RealTimeTranslator = () => {
   const [isDetecting, setIsDetecting] = useState(false)
-  // --- MODIFICAÇÃO AQUI ---
-  // O estado do texto agora será controlado pelo hook, mas mantemos um estado local para a UI
   const [translatedText, setTranslatedText] = useState('Aponte a câmera para sua mão para começar.')
-  // --- FIM DA MODIFICAÇÃO ---
   const [isCameraActive, setIsCameraActive] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
-  // --- MODIFICAÇÃO AQUI ---
-  // Usando o hook e desestruturando seus retornos
   const { detectedGesture, loading, error, predictWebcam, stopPrediction } = useHandGestureRecognition();
-  // --- FIM DA MODIFICAÇÃO ---
 
   const startCamera = async () => {
     try {
@@ -32,7 +24,6 @@ const RealTimeTranslator = () => {
         videoRef.current.srcObject = stream
         streamRef.current = stream
         setIsCameraActive(true)
-        // Inicia a predição assim que a câmera estiver pronta
         videoRef.current.onloadedmetadata = () => {
           predictWebcam(videoRef.current);
         };
@@ -44,7 +35,7 @@ const RealTimeTranslator = () => {
   }
 
   const stopCamera = () => {
-    stopPrediction(); // Para o loop de detecção
+    stopPrediction();
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
       streamRef.current = null
@@ -53,8 +44,6 @@ const RealTimeTranslator = () => {
     }
   }
 
-  // --- MODIFICAÇÃO AQUI ---
-  // Simplificando a função startDetection
   const handleDetectionClick = () => {
     if (isDetecting) {
       stopCamera();
@@ -63,14 +52,13 @@ const RealTimeTranslator = () => {
       startCamera();
     }
   }
-  // --- FIM DA MODIFICAÇÃO ---
 
   const clearText = () => {
     setTranslatedText('Aponte a câmera para sua mão para começar.')
   }
 
   const speakText = () => {
-    const textToSpeak = translatedText.replace(/👍|✋/g, '').trim(); // Remove emojis para a fala
+    const textToSpeak = translatedText.replace(/👍|✋/g, '').trim();
     if ('speechSynthesis' in window && textToSpeak) {
       const utterance = new SpeechSynthesisUtterance(textToSpeak)
       utterance.lang = 'pt-BR'
@@ -78,20 +66,17 @@ const RealTimeTranslator = () => {
     }
   }
 
-  // --- MODIFICAÇÃO AQUI ---
-  // Efeito para atualizar o texto da UI com base no gesto detectado
   useEffect(() => {
     if (isDetecting) {
       if (detectedGesture) {
         setTranslatedText(detectedGesture);
       } else {
-        setTranslatedText('...'); // Feedback visual de que a detecção está ativa
+        setTranslatedText('...');
       }
     } else {
       setTranslatedText('Aponte a câmera para sua mão para começar.');
     }
   }, [detectedGesture, isDetecting]);
-  // --- FIM DA MODIFICAÇÃO ---
 
   useEffect(() => {
     return () => {
@@ -104,11 +89,11 @@ const RealTimeTranslator = () => {
       {/* Header */}
       <header className="bg-card border-b border-border p-4">
         <div className="container mx-auto flex items-center">
-          <Link to="/" className="flex items-center text-muted-foreground hover:text-foreground">
+          <Link to="/" className="flex items-center text-foreground hover:text-foreground/80">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Voltar
           </Link>
-          <h1 className="text-2xl font-bold text-center flex-1">Tradutor em Tempo Real</h1>
+          <h1 className="text-2xl font-bold text-center flex-1 text-foreground">Tradutor em Tempo Real</h1>
         </div>
       </header>
 
@@ -117,7 +102,7 @@ const RealTimeTranslator = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Camera Section */}
           <div className="bg-card rounded-lg p-6 border border-border">
-            <h2 className="text-xl font-semibold mb-4">Câmera Frontal</h2>
+            <h2 className="text-xl font-semibold mb-4 text-card-foreground">Câmera Frontal</h2>
             
             <div className="relative bg-black rounded-lg overflow-hidden mb-4" style={{ aspectRatio: '4/3' }}>
               <video
@@ -135,7 +120,6 @@ const RealTimeTranslator = () => {
               )}
             </div>
 
-            {/* --- MODIFICAÇÃO AQUI --- */}
             <Button 
               onClick={handleDetectionClick}
               disabled={loading}
@@ -149,22 +133,22 @@ const RealTimeTranslator = () => {
               {loading ? 'Carregando IA...' : (isDetecting ? 'Parar Detecção' : 'Iniciar Detecção')}
             </Button>
             {error && <p className="text-destructive text-sm mt-2">Erro ao carregar modelo de IA.</p>}
-            {/* --- FIM DA MODIFICAÇÃO --- */}
           </div>
 
           {/* Translation Section */}
           <div className="bg-card rounded-lg p-6 border border-border">
-            <h2 className="text-xl font-semibold mb-4">Texto Traduzido</h2>
+            <h2 className="text-xl font-semibold mb-4 text-card-foreground">Texto Traduzido</h2>
             
             <div className="bg-muted rounded-lg p-4 min-h-32 mb-4">
               <p className="text-muted-foreground">{translatedText}</p>
             </div>
 
+            {/* --- MODIFICAÇÃO AQUI --- */}
             <div className="flex gap-2">
               <Button 
                 onClick={clearText}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 text-foreground"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Limpar
@@ -172,19 +156,20 @@ const RealTimeTranslator = () => {
               <Button 
                 onClick={speakText}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 text-foreground"
                 disabled={!translatedText || translatedText.startsWith('Aponte') || translatedText === '...'}
               >
                 <Volume2 className="w-4 h-4 mr-2" />
                 Falar Texto
               </Button>
             </div>
+            {/* --- FIM DA MODIFICAÇÃO --- */}
           </div>
         </div>
 
         {/* Instructions */}
         <div className="mt-8 bg-card rounded-lg p-6 border border-border">
-          <h3 className="text-lg font-semibold mb-4">Como usar:</h3>
+          <h3 className="text-lg font-semibold mb-4 text-card-foreground">Como usar:</h3>
           <ul className="space-y-2 text-muted-foreground">
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
