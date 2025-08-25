@@ -1,8 +1,38 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Camera, Volume2, Trash2, LoaderCircle } from 'lucide-react'
+import { ArrowLeft, Camera, Volume2, Trash2, LoaderCircle, Hand } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
+// --- MODIFICAÇÃO 1: Importar os dados dos sinais ---
+import { signs } from '@/data/signs'
+
+// --- MODIFICAÇÃO 2: Definir a lista de sinais que o tradutor reconhece ---
+const detectableSignNames = [
+  'Eu te amo',
+  'Paz',
+  'OK',
+  'Polegar para Cima', // Adicionamos este para corresponder à lógica
+  'Mão Aberta',      // e este também
+]
+
+// Filtramos o array completo de sinais para obter apenas os que podemos detectar
+const detectableSigns = signs.filter(sign => detectableSignNames.includes(sign.word))
+// Adicionamos manualmente os sinais que não estão no dicionário, mas são detectados
+if (!detectableSigns.find(s => s.word === 'Polegar para Cima')) {
+  detectableSigns.push({
+    id: 998,
+    word: 'Polegar para Cima',
+    instructions: ['Levante o polegar', 'Mantenha os outros dedos fechados']
+  })
+}
+if (!detectableSigns.find(s => s.word === 'Mão Aberta')) {
+  detectableSigns.push({
+    id: 999,
+    word: 'Mão Aberta',
+    instructions: ['Abra a mão completamente', 'Mantenha os dedos esticados e separados']
+  })
+}
+
 
 const RealTimeTranslator = () => {
   const [isDetecting, setIsDetecting] = useState(false)
@@ -143,7 +173,6 @@ const RealTimeTranslator = () => {
               <p className="text-muted-foreground">{translatedText}</p>
             </div>
 
-            {/* --- MODIFICAÇÃO AQUI --- */}
             <div className="flex gap-2">
               <Button 
                 onClick={clearText}
@@ -163,9 +192,32 @@ const RealTimeTranslator = () => {
                 Falar Texto
               </Button>
             </div>
-            {/* --- FIM DA MODIFICAÇÃO --- */}
           </div>
         </div>
+
+        {/* --- MODIFICAÇÃO 3: NOVA SEÇÃO DE SINAIS DETECTÁVEIS --- */}
+        <div className="mt-8 bg-card rounded-lg p-6 border border-border">
+          <div className="flex items-center mb-4">
+            <Hand className="w-5 h-5 mr-3 text-foreground" />
+            <h3 className="text-lg font-semibold text-card-foreground">Sinais Reconhecidos Atualmente</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-6">
+            A versão atual do nosso tradutor pode reconhecer os seguintes sinais estáticos. Faça-os de forma clara em frente à câmera.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {detectableSigns.map(sign => (
+              <div key={sign.id} className="bg-muted p-4 rounded-md">
+                <h4 className="font-semibold text-foreground mb-2">{sign.word}</h4>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  {sign.instructions.map((instruction, index) => (
+                    <li key={index}>{instruction}</li>
+                  ))}
+                </ol>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* --- FIM DA MODIFICAÇÃO --- */}
 
         {/* Instructions */}
         <div className="mt-8 bg-card rounded-lg p-6 border border-border">
@@ -181,15 +233,11 @@ const RealTimeTranslator = () => {
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
-              Faça os sinais de libras de forma clara e pausada.
+              Faça um dos sinais listados acima de forma clara e pausada.
             </li>
             <li className="flex items-start">
               <span className="font-semibold mr-2">•</span>
               O texto traduzido aparecerá em tempo real na tela.
-            </li>
-            <li className="flex items-start">
-              <span className="font-semibold mr-2">•</span>
-              Use "Falar Texto" para reproduzir o áudio da tradução.
             </li>
           </ul>
         </div>
