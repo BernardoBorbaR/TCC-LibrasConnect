@@ -1,52 +1,28 @@
-import { useState, useEffect } from 'react' // Adicionado useEffect
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Eye, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState } from 'react' // Mantemos o useState para configurações locais
 
+// --- MODIFICAÇÃO PRINCIPAL ---
+// O componente agora recebe e usa diretamente as props do App.jsx
+// para controlar o estado global.
 const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast, setHighContrast }) => {
-  // --- MODIFICAÇÃO AQUI: ESTADO LOCAL PARA MUDANÇAS PENDENTES ---
-  // Criamos um estado local para cada configuração. Eles são inicializados com os valores
-  // do estado global (que vêm via props).
-  const [localDarkMode, setLocalDarkMode] = useState(darkMode)
-  const [localLargeText, setLocalLargeText] = useState(largeText)
-  const [localHighContrast, setLocalHighContrast] = useState(highContrast)
-  const [localGestureSize, setLocalGestureSize] = useState([50])
-  const [localCameraQuality, setLocalCameraQuality] = useState('high')
+  // Mantemos o estado local APENAS para configurações que não afetam o app inteiro,
+  // como tamanho do gesto e qualidade da câmera.
+  const [gestureSize, setGestureSize] = useState([50])
+  const [cameraQuality, setCameraQuality] = useState('high')
 
-  // Este efeito garante que se as props mudarem, o estado local seja atualizado.
-  // Útil para manter a consistência.
-  useEffect(() => {
-    setLocalDarkMode(darkMode)
-    setLocalLargeText(largeText)
-    setLocalHighContrast(highContrast)
-  }, [darkMode, largeText, highContrast])
-  // --- FIM DA MODIFICAÇÃO ---
-
-  const saveSettings = () => {
-    // --- MODIFICAÇÃO AQUI: APLICAR AS MUDANÇAS ---
-    // Agora, o botão "Salvar" pega os valores do estado local e os envia
-    // para o estado global em App.jsx, aplicando as mudanças em todo o site.
-    setDarkMode(localDarkMode)
-    setLargeText(localLargeText)
-    setHighContrast(localHighContrast)
-    // (As outras configurações como gestureSize e cameraQuality já eram locais,
-    // mas poderiam ser salvas em localStorage aqui no futuro)
-    alert('Configurações salvas e aplicadas com sucesso!')
-  }
-
+  // A função de reset agora chama diretamente os setters globais e locais.
   const resetSettings = () => {
-    // --- MODIFICAÇÃO AQUI: RESETAR O ESTADO LOCAL ---
-    // O reset agora afeta apenas o estado local. O usuário ainda precisa
-    // clicar em "Salvar" para que os padrões sejam aplicados globalmente.
-    setLocalDarkMode(false)
-    setLocalLargeText(false)
-    setLocalHighContrast(false)
-    setLocalGestureSize([50])
-    setLocalCameraQuality('high')
-    alert('Configurações restauradas para o padrão. Clique em "Salvar" para aplicar.')
+    setDarkMode(false)
+    setLargeText(false)
+    setHighContrast(false)
+    setGestureSize([50])
+    setCameraQuality('high')
+    alert('Configurações restauradas para o padrão.')
   }
 
   return (
@@ -73,7 +49,7 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
             </div>
 
             <div className="space-y-6">
-              {/* --- MODIFICAÇÃO AQUI: USAR ESTADO LOCAL NOS CONTROLES --- */}
+              {/* --- MODIFICAÇÃO: CONTROLES LIGADOS DIRETAMENTE ÀS PROPS --- */}
               {/* Dark Mode */}
               <div className="flex items-center justify-between">
                 <div>
@@ -81,8 +57,8 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
                   <p className="text-sm text-muted-foreground">Reduz o brilho da tela para ambientes escuros</p>
                 </div>
                 <Switch
-                  checked={localDarkMode}
-                  onCheckedChange={setLocalDarkMode}
+                  checked={darkMode}
+                  onCheckedChange={setDarkMode} // Aplica a mudança imediatamente
                 />
               </div>
 
@@ -93,8 +69,8 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
                   <p className="text-sm text-muted-foreground">Aumenta o contraste para melhor visibilidade</p>
                 </div>
                 <Switch
-                  checked={localHighContrast}
-                  onCheckedChange={setLocalHighContrast}
+                  checked={highContrast}
+                  onCheckedChange={setHighContrast} // Aplica a mudança imediatamente
                 />
               </div>
 
@@ -105,27 +81,26 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
                   <p className="text-sm text-muted-foreground">Aumenta o tamanho dos textos</p>
                 </div>
                 <Switch
-                  checked={localLargeText}
-                  onCheckedChange={setLocalLargeText}
+                  checked={largeText}
+                  onCheckedChange={setLargeText} // Aplica a mudança imediatamente
                 />
               </div>
 
-              {/* Gesture Size */}
+              {/* Gesture Size (continua local) */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-card-foreground">Tamanho dos Gestos: {localGestureSize[0]}%</h3>
+                  <h3 className="font-medium text-card-foreground">Tamanho dos Gestos: {gestureSize[0]}%</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">Ajusta o tamanho da área de detecção de gestos</p>
                 <Slider
-                  value={localGestureSize}
-                  onValueChange={setLocalGestureSize}
+                  value={gestureSize}
+                  onValueChange={setGestureSize}
                   max={100}
                   min={25}
                   step={5}
                   className="w-full"
                 />
               </div>
-              {/* --- FIM DA MODIFICAÇÃO --- */}
             </div>
           </div>
         </div>
@@ -140,8 +115,7 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
           <div className="max-w-md">
             <div className="mb-4">
               <h3 className="font-medium mb-2 text-card-foreground">Qualidade da Câmera</h3>
-              {/* --- MODIFICAÇÃO AQUI: USAR ESTADO LOCAL --- */}
-              <Select value={localCameraQuality} onValueChange={setLocalCameraQuality}>
+              <Select value={cameraQuality} onValueChange={setCameraQuality}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -151,7 +125,6 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
                   <SelectItem value="low">Baixa (480p) - Melhor performance</SelectItem>
                 </SelectContent>
               </Select>
-              {/* --- FIM DA MODIFICAÇÃO --- */}
               <p className="text-sm text-muted-foreground mt-1">
                 Qualidade mais baixa melhora a performance
               </p>
@@ -159,21 +132,16 @@ const Settings = ({ darkMode, setDarkMode, largeText, setLargeText, highContrast
           </div>
         </div>
 
-        {/* Save Settings */}
-        <div className="mt-8 bg-card rounded-lg border border-border p-6">
-          <h3 className="text-lg font-semibold mb-4 text-card-foreground">Salvar Alterações</h3>
-          <p className="text-muted-foreground mb-4">
-            Suas alterações não serão aplicadas até que você clique em salvar.
+        {/* --- MODIFICAÇÃO: REMOÇÃO DA SEÇÃO DE SALVAR --- */}
+        {/* A seção inteira de "Salvar Alterações" foi removida. */}
+        {/* Adicionamos o botão de restaurar aqui em um local mais simples. */}
+        <div className="mt-8 flex items-center gap-4">
+          <Button onClick={resetSettings} variant="outline">
+            Restaurar Padrões
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Restaura todas as configurações para os valores iniciais.
           </p>
-          
-          <div className="flex gap-4">
-            <Button onClick={saveSettings}>
-              Salvar Configurações
-            </Button>
-            <Button onClick={resetSettings} variant="outline">
-              Restaurar Padrões
-            </Button>
-          </div>
         </div>
 
         {/* Accessibility Tip */}
