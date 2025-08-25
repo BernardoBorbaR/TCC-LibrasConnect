@@ -3,21 +3,17 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera, Volume2, Trash2, LoaderCircle, Hand } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useHandGestureRecognition } from '@/hooks/useHandGestureRecognition'
-// --- MODIFICAÇÃO 1: Importar os dados dos sinais ---
 import { signs } from '@/data/signs'
 
-// --- MODIFICAÇÃO 2: Definir a lista de sinais que o tradutor reconhece ---
 const detectableSignNames = [
   'Eu te amo',
   'Paz',
   'OK',
-  'Polegar para Cima', // Adicionamos este para corresponder à lógica
-  'Mão Aberta',      // e este também
+  'Polegar para Cima',
+  'Mão Aberta',
 ]
 
-// Filtramos o array completo de sinais para obter apenas os que podemos detectar
 const detectableSigns = signs.filter(sign => detectableSignNames.includes(sign.word))
-// Adicionamos manualmente os sinais que não estão no dicionário, mas são detectados
 if (!detectableSigns.find(s => s.word === 'Polegar para Cima')) {
   detectableSigns.push({
     id: 998,
@@ -33,13 +29,14 @@ if (!detectableSigns.find(s => s.word === 'Mão Aberta')) {
   })
 }
 
-
 const RealTimeTranslator = () => {
   const [isDetecting, setIsDetecting] = useState(false)
   const [translatedText, setTranslatedText] = useState('Aponte a câmera para sua mão para começar.')
   const [isCameraActive, setIsCameraActive] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  // --- MODIFICAÇÃO 1: Adicionar um useRef para o timeout ---
+  const gestureTimeoutRef = useRef(null)
 
   const { detectedGesture, loading, error, predictWebcam, stopPrediction } = useHandGestureRecognition();
 
@@ -72,6 +69,10 @@ const RealTimeTranslator = () => {
       setIsCameraActive(false)
       setIsDetecting(false)
     }
+    // Limpa qualquer timeout pendente ao parar a câmera
+    if (gestureTimeoutRef.current) {
+      clearTimeout(gestureTimeoutRef.current)
+    }
   }
 
   const handleDetectionClick = () => {
@@ -85,28 +86,54 @@ const RealTimeTranslator = () => {
 
   const clearText = () => {
     setTranslatedText('Aponte a câmera para sua mão para começar.')
+    if (gestureTimeoutRef.current) {
+      clearTimeout(gestureTimeoutRef.current)
+    }
   }
 
   const speakText = () => {
     const textToSpeak = translatedText.replace(/👍|✋/g, '').trim();
-    if ('speechSynthesis' in window && textToSpeak) {
+    if ('speechSynthesis' in window && textToSpeak && textToSpeak !== 'Carregando sinal...') {
       const utterance = new SpeechSynthesisUtterance(textToSpeak)
       utterance.lang = 'pt-BR'
       speechSynthesis.speak(utterance)
     }
   }
 
+  // --- MODIFICAÇÃO 2: Lógica de exibição com delay ---
   useEffect(() => {
+    // Limpa o timeout anterior sempre que um novo gesto é detectado ou a detecção para.
+    // Isso evita que um gesto antigo apareça após um novo ser detectado.
+    if (gestureTimeoutRef.current) {
+      clearTimeout(gestureTimeoutRef.current)
+    }
+
     if (isDetecting) {
       if (detectedGesture) {
-        setTranslatedText(detectedGesture);
+        // 1. Mostra a mensagem de carregamento imediatamente
+        setTranslatedText('Carregando sinal...')
+
+        // 2. Define um timeout para mostrar o resultado após 2 segundos
+        gestureTimeoutRef.current = setTimeout(() => {
+          setTranslatedText(detectedGesture)
+        }, 2000) // 2000ms = 2 segundos
       } else {
-        setTranslatedText('...');
+        // Se nenhum gesto for detectado, mostra o placeholder
+        setTranslatedText('...')
       }
     } else {
-      setTranslatedText('Aponte a câmera para sua mão para começar.');
+      // Se a detecção não estiver ativa, mostra a mensagem inicial
+      setTranslatedText('Aponte a câmera para sua mão para começar.')
     }
-  }, [detectedGesture, isDetecting]);
+
+    // Função de limpeza para o useEffect: garante que o timeout seja limpo
+    // se o componente for desmontado.
+    return () => {
+      if (gestureTimeoutRef.current) {
+        clearTimeout(gestureTimeoutRef.current)
+      }
+    }
+  }, [detectedGesture, isDetecting]) // O efeito é re-executado quando o gesto ou o estado de detecção mudam
 
   useEffect(() => {
     return () => {
@@ -169,8 +196,16 @@ const RealTimeTranslator = () => {
           <div className="bg-card rounded-lg p-6 border border-border">
             <h2 className="text-xl font-semibold mb-4 text-card-foreground">Texto Traduzido</h2>
             
-            <div className="bg-muted rounded-lg p-4 min-h-32 mb-4">
-              <p className="text-muted-foreground">{translatedText}</p>
+            {/* --- MODIFICAÇÃO 3: Melhoria visual para o estado de carregamento --- */}
+            <div className="bg-muted rounded-lg p-4 min-h-32 mb-4 flex items-center justify-center">
+              {translatedText === 'Carregando sinal...' ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <LoaderCircle className="w-5 h-5 animate-spin" />
+                  <span>{translatedText}</span>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center">{translatedText}</p>
+              )}
             </div>
 
             <div className="flex gap-2">
@@ -186,7 +221,7 @@ const RealTimeTranslator = () => {
                 onClick={speakText}
                 variant="outline"
                 className="flex-1 text-foreground"
-                disabled={!translatedText || translatedText.startsWith('Aponte') || translatedText === '...'}
+                disabled={!translatedText || translatedText.startsWith('Aponte') || translatedText === '...' || translatedText === 'Carregando sinal...'}
               >
                 <Volume2 className="w-4 h-4 mr-2" />
                 Falar Texto
@@ -195,7 +230,7 @@ const RealTimeTranslator = () => {
           </div>
         </div>
 
-        {/* --- MODIFICAÇÃO 3: NOVA SEÇÃO DE SINAIS DETECTÁVEIS --- */}
+        {/* Sinais Reconhecidos Atualmente */}
         <div className="mt-8 bg-card rounded-lg p-6 border border-border">
           <div className="flex items-center mb-4">
             <Hand className="w-5 h-5 mr-3 text-foreground" />
@@ -217,7 +252,6 @@ const RealTimeTranslator = () => {
             ))}
           </div>
         </div>
-        {/* --- FIM DA MODIFICAÇÃO --- */}
 
         {/* Instructions */}
         <div className="mt-8 bg-card rounded-lg p-6 border border-border">
