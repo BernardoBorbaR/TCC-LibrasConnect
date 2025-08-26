@@ -116,7 +116,7 @@ const RealTimeTranslator = () => {
         // 2. Define um timeout para mostrar o resultado após 2 segundos
         gestureTimeoutRef.current = setTimeout(() => {
           setTranslatedText(detectedGesture)
-        }, 2000) // 2000ms = 2 segundos
+        }, 1000) // 2000ms = 2 segundos
       } else {
         // Se nenhum gesto for detectado, mostra o placeholder
         setTranslatedText('...')
